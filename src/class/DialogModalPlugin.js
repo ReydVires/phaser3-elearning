@@ -113,7 +113,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
     this.graphics.setScrollFactor(0, 0);
   }
 
-  setNext(data){
+  setNext(data){ // Not stack, but queue! FIX IT!
     this.nextState.push(data);
     this.currState = this.nextState.length - 1;
   }

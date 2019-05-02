@@ -36,6 +36,8 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
     this.currState = 0;
     this.nextState = [];
 
+    this.typingSfx = this.scene.sound.add('typing_sfx');
+    this.typingSfx.setVolume(0.35);
     // create the dialog
     this._createWindow();
   }
@@ -115,7 +117,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
 
   setNext(data){ // Not stack, but queue! FIX IT!
     this.nextState.push(data);
-    this.currState = this.nextState.length - 1;
+    // this.currState = this.nextState.length - 1;
   }
 
   _skipAnimateTyping(){
@@ -139,7 +141,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
     return mergedTxet;
   }
 
-  toggleWindow(){ 
+  toggleWindow(){ // call when init text
     this.visible = !this.visible;
     if (this.dialogText) this.dialogText.visible = this.visible;
     if (this.graphics) this.graphics.visible = this.visible;
@@ -147,6 +149,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
     if (this.timedEvent) this.timedEvent.remove();
     if (this.dialogText) this.dialogText.destroy();
     this.nextState = []; // cleaning state
+    this.currState = 0; // return state to head
     // tangled with player.update() for movement
     this.scene.player.freeze = false;
   }
@@ -174,6 +177,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
   }
 
   _animateText(){
+    this.typingSfx.play();
     this.eventCounter++;
     this.dialogText.setText(this.dialogText.text + this.dialog[this.eventCounter - 1]);
     if (this.eventCounter == this.dialog.length){
@@ -183,7 +187,7 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
   }
 
   _checkState(){
-    if (this.currState >= 0){
+    if (this.currState < this.nextState.length){
       if (typeof this.nextState[this.currState] == "string"){
         console.log('Param is string');
         this.setDialogText(this.nextState[this.currState], true);
@@ -192,7 +196,8 @@ export default class DialogModalPlugin extends Phaser.Plugins.BasePlugin {
         console.log('Param is function');
         this.nextState[this.currState].call;
       }
-      this.currState--;
+      // this.currState--;
+      this.currState++;
     }
     else {
       console.log('no next param. dialog end');

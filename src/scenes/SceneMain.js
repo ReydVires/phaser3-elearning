@@ -12,7 +12,13 @@ export default class SceneMain extends Phaser.Scene {
     // Define our objects
     console.log(`Ready SceneMain! ${GameManager.signature}`);
 
+    this.bgmGame = this.sound.add('bgm_elearning', {loop: true});
+    this.bgmGame.play();
+
     this.canOpenQuest;
+    this.questionOpen = false; // can interact with door?
+    this.currQuestion = 1;
+    this.listOpenedDoor = [];
 
     // add camera
     const cam = this.cameras.main;
@@ -91,43 +97,151 @@ export default class SceneMain extends Phaser.Scene {
   } // End of create()
 
   openingMessage(){
-    this.dialogPlugin.setDialogText("Welcome to e-learning! Ahmad Arsyel Abdul H. Choose the house!", true);
-    this.dialogPlugin.setNext('Actually, accepted answer is not fully correct.');
-    this.dialogPlugin.setNext('I tested again on Chrome v53 and concatenation now.');
+    this.dialogPlugin.setDialogText('Selamat datang di Pre-Test E-Learning!', true);
+    this.dialogPlugin.setNext('Perkenalkan nama Aku Null.');
+    this.dialogPlugin.setNext('Peranku di sini akan menjadi pointer kamu-');
+    this.dialogPlugin.setNext('dalam memilih jawaban untuk Pre-Test.');
+    this.dialogPlugin.setNext('Disediakan 4 rumah dengan huruf alfabet di atasnya.');
+    this.dialogPlugin.setNext('Huruf tersebut menandakan jawaban yang akan kamu pilih.');
+    this.dialogPlugin.setNext('Untuk bergerak, gunakan key [A, D] pada keyboard.');
+    this.dialogPlugin.setNext('Untuk loncat, gunakan key [Spasi] pada keyboard.');
+    this.dialogPlugin.setNext('Untuk berinteraksi, gunakan key [W + Spasi] pada keyboard.');
+    this.dialogPlugin.setNext('Untuk memulai test, lakukan interaksi pada kristal kuning.');
   }
 
   openQuest(){
     this.dialogPlugin.toggleWindow();
-    this.dialogPlugin.setDialogText("Welcome to e-learning!", true);
-    this.dialogPlugin.setNext('I tested again on Chrome v53 and concatenation now.');
+    if (this.currQuestion <=5){
+      this.questionOpen = true;
+      this.callQuestionText(this.currQuestion);
+    }
+    else{
+      this.dialogPlugin.setDialogText(`Pre-Test telah selesai.\nSCORE PRE-TEST: ${GameManager.score}`, true);
+      this.dialogPlugin.setNext(`Silahkan lanjutkan session.`);
+    }
+  }
+
+  callQuestionText(num){
+    switch (num) {
+      case 1:
+        this.dialogPlugin.setDialogText(`Soal nomor ${num}/5`, true);
+        this.dialogPlugin.setNext('ADDIE Model termasuk ke dalam framework?');
+        this.dialogPlugin.setNext('[A.] Instructional  System Design');
+        this.dialogPlugin.setNext('[B.] System Design\n[C.] Model Design');
+        this.dialogPlugin.setNext('[D.] Instructional Design Analysis');
+        break;
+      case 2:
+        this.dialogPlugin.setDialogText(`Soal nomor ${num}/5`, true);
+        this.dialogPlugin.setNext('ADDIE digunakan untuk merancang pembuatan?');
+        this.dialogPlugin.setNext('[A.] Aplikasi E-Learning\n[B.] Konten E-Learning');
+        this.dialogPlugin.setNext('[C.] Evaluasi E-Learning\n[D.] Model E-Learning');
+        break;
+      case 3:
+        this.dialogPlugin.setDialogText(`Soal nomor ${num}/5`, true);
+        this.dialogPlugin.setNext('Yang tidak termasuk ke dalam tahapan ADDIE adalah?');
+        this.dialogPlugin.setNext('[A.] Analisis\n[B.] Desain');
+        this.dialogPlugin.setNext('[C.] Deployment\n[D.] Implementasi');
+        break;
+      case 4:
+        this.dialogPlugin.setDialogText(`Soal nomor ${num}/5`, true);
+        this.dialogPlugin.setNext('Tahapan ADDIE yang harus selalu dilakukan adalah?');
+        this.dialogPlugin.setNext('[A.] Analisis\n[B.] Implementasi');
+        this.dialogPlugin.setNext('[C.] Evaluasi\n[D.] Desain');
+        break;
+      case 5:
+        this.dialogPlugin.setDialogText(`Soal nomor ${num}/5`, true);
+        this.dialogPlugin.setNext('Penyusunan ADDIE dilakukan oleh?');
+        this.dialogPlugin.setNext('[A.] Learner\n[B.] Tutor');
+        this.dialogPlugin.setNext('[C.] SME\n[D.] Instructional Designer');
+        break;
+      default:
+        console.log(`Undefine callQuestion num variable: ${num}`);        
+        break;
+    }
+  }
+
+  resultQuestionText(doorNum){
+    let rightAnswer = [1, 2, 3, 3, 4];
+    let result = rightAnswer[this.currQuestion-1] == doorNum;
+    console.log(`RESULT ${result}`);
+    
+    this.dialogPlugin.toggleWindow();
+    if (result){
+      this.currQuestion++;
+      this.dialogPlugin.setDialogText(`Jawaban kamu benar!`, true);
+      GameManager.score += 2;
+      if (this.currQuestion <= 5){
+        this.dialogPlugin.setNext("Lakukan interaksi pada kristal kuning untuk memulai soal baru.");
+      }
+      else{
+        this.dialogPlugin.setNext("Pre-Test telah selesai.");
+        this.dialogPlugin.setNext("Null sangat berterima kasih kepada kamu.");
+        this.dialogPlugin.setNext(`Semangat belajar ADDIE!\nSCORE PRE-TEST: ${GameManager.score}`);
+        console.log(`Show Score: ${GameManager.score}`);        
+      }
+      this.questionOpen = false;
+      this.time.addEvent({
+        delay: 1500,
+        callback: this.returnOpenedDoor.bind(this)
+      });
+    }
+    else{
+      this.dialogPlugin.setDialogText(`Yahh.. Jawaban kamu kurang tepat.`, true);
+      this.dialogPlugin.setNext(`Coba lagi!`);
+      GameManager.score--;
+    }
+  }
+
+  returnOpenedDoor(){
+    this.listOpenedDoor.forEach(door =>{
+      door.alpha = 0;
+    });
+    this.listOpenedDoor = [];
   }
 
   openTheDoor(doorNum){
     // Called on: Player.js
-    console.log(`Holla Door${doorNum}`);
-    // Dilation index of tile as id = 799 + id
-    let doorsIdx = [0, 0];
-    switch (doorNum) {
-      case 1:
-        doorsIdx = [864, 865];
-        break;
-      case 2:
-        doorsIdx = [868, 869];
-        break;
-      case 3:
-        doorsIdx = [860, 861];
-        break;
-      case 4:
-        doorsIdx = [872, 873];
-        break;
-    }
-    this.doorOpenLayer.forEachTile(tile => {
-      for (let i = 0; i < doorsIdx.length; i++) {
-        if (tile.index == doorsIdx[i]){
-          tile.alpha = 1; // Make the door visible, see line 40
-        }
+    if (this.questionOpen){
+      console.log(`Holla Door${doorNum}.`);
+      this.resultQuestionText(doorNum);
+      // Dilation index of tile as id = 799 + id
+      let doorsIdx = [0, 0];
+      switch (doorNum) {
+        case 1:
+          doorsIdx = [864, 865];
+          break;
+        case 2:
+          doorsIdx = [868, 869];
+          break;
+        case 3:
+          doorsIdx = [860, 861];
+          break;
+        case 4:
+          doorsIdx = [872, 873];
+          break;
       }
-    });
+      this.doorOpenLayer.forEachTile(tile => {
+        for (let i = 0; i < doorsIdx.length; i++) {
+          if (tile.index == doorsIdx[i]){
+            tile.alpha = 1; // Make the door visible, see line 40
+            this.listOpenedDoor.push(tile);
+          }
+        }
+      });
+    }
+    else{
+      this.dialogPlugin.toggleWindow();
+      if (this.currQuestion <= 1){
+        this.dialogPlugin.setDialogText("Kamu belum memulai test.", true);
+        this.dialogPlugin.setNext("Lakukan interaksi pada kristal kuning untuk memulai.");
+      }
+      else if (this.currQuestion > 1 && this.callQuestionText <= 5){
+        this.dialogPlugin.setDialogText("Lakukan interaksi pada kristal kuning untuk memulai soal baru.");
+      }
+      else{
+        this.dialogPlugin.setDialogText("Pintu dikunci.", true);
+      }
+    }
   }
 
   createWallsBound(){

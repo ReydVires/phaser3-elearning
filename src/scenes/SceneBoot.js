@@ -8,6 +8,8 @@ export default class SceneBoot extends Phaser.Scene {
 
   preload(){
     // Load images and sounds
+    this.load.audio('typing_sfx', 'assets/audio/typing_sfx.wav');
+    this.load.audio('bgm_elearning', 'assets/audio/bgm_elearning.ogg');
     this.load.image('bg_sky', 'assets/bg_sky.png');
     this.load.image('bg_far', 'assets/bg_far.png');
     this.load.image('quest', 'assets/crystal.png');

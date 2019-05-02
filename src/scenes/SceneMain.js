@@ -117,7 +117,7 @@ export default class SceneMain extends Phaser.Scene {
     }
     else{
       this.dialogPlugin.setDialogText(`Pre-Test telah selesai.\nSCORE PRE-TEST: ${GameManager.score}`, true);
-      this.dialogPlugin.setNext(`Silahkan lanjutkan session.`);
+      this.dialogPlugin.setNext(`Silahkan menuju sesi lanjutkan.`);
     }
   }
 
